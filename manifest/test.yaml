@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  testdeploy
+  namespace: default
+  labels:
+    app:  testdeploy
+spec:
+  selector:
+    matchLabels:
+      app: testdeploy
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app:  testdeploy
+    spec:
+      # initContainers:
+      # Init containers are exactly like regular containers, except:
+      # - Init containers always run to completion.
+      # - Each init container must complete successfully before the next one starts.
+      containers:
+        - name:  testdeploy
+          image:  k8s.gcr.io/nginx:latest
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: testdeploy
+                  key: DB_HOST
+          ports:
+            - containerPort:  80
+              name:  testdeploy
+          volumeMounts:
+            - name: localtime
+              mountPath: /etc/localtime
+      volumes:
+        - name: localtime
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Shanghai
+      restartPolicy: Always
