@@ -87,6 +87,7 @@ func refreshImageModifyList() {
 	if defaultKey == "true" || defaultKey == "1" || defaultKey == "yes" {
 		imageModifyList = defaultImageModifyList
 	} else {
+		imageModifyList = imageModifyList[0:0]
 		imagePres := strings.Split(MODIFY_IMG_PRE, ",")
 		if len(imagePres) > 0 {
 			imageModifyList = append(imageModifyList, imagePres...)
