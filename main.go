@@ -10,7 +10,7 @@ import (
 func main() {
 
 	mux := http.ServeMux{}
-	x509KeyPair, err := tls.LoadX509KeyPair("", "")
+	x509KeyPair, err := tls.LoadX509KeyPair("/etc/webhook/certs/tls.crt", "/etc/webhook/certs/tls.key")
 	if err != nil {
 		return
 	}
