@@ -22,14 +22,13 @@ func (v *validateAdmissionWebhook) ServeHTTP(writer http.ResponseWriter, request
 		body = data
 	}
 	requestReview := admissionv1.AdmissionReview{}
-	obj, gvk, err := admissionhooktool.Deserializer.Decode(body, nil, &requestReview)
+	_, gvk, err := admissionhooktool.Deserializer.Decode(body, nil, &requestReview)
 	if err != nil {
 		admissionhooktool.Log.Error(err, "deserializer.Decode err")
 		response := admissionhooktool.Errored(http.StatusBadRequest, err)
 		admissionhooktool.WriteAdmissionResponse(writer, response, requestReview.Request, gvk)
 		return
 	}
-	admissionhooktool.Log.Info("AdmissionReview", "object", obj, "schema.GroupVersionKind", gvk)
 	admissionhooktool.Log.Info("AdmissionReviewRaw", "raw", string(requestReview.Request.Object.Raw))
 	response := v.doHandle(requestReview)
 	admissionhooktool.WriteAdmissionResponse(writer, response, requestReview.Request, gvk)
