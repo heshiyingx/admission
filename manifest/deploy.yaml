@@ -26,7 +26,7 @@ spec:
       # - Each init container must complete successfully before the next one starts.
       containers:
         - name:  pod-dmission
-          image:  harbor.myshuju.top/public/admissionpod:v0.0.1
+          image:  harbor.myshuju.top/public/admissionpod:v0.0.6
           resources:
             requests:
               cpu: 100m
@@ -34,27 +34,11 @@ spec:
             limits:
               cpu: 100m
               memory: 100Mi
-          livenessProbe:
-            tcpSocket:
-              port: 443
-            initialDelaySeconds: 30
-            timeoutSeconds: 5
-            successThreshold: 1
-            failureThreshold: 10
-            periodSeconds: 10
-          readinessProbe:
-            tcpSocket:
-              port: 443
-            initialDelaySeconds: 30
-            timeoutSeconds: 3
-            successThreshold: 1
-            failureThreshold: 30
-            periodSeconds: 10
           env:
             - name: IMG_DEFUALT_MODIFY
               value: "true"
           ports:
-            - containerPort:  80
+            - containerPort:  1443
               name:  pod-dmission
           volumeMounts:
             - name: localtime
@@ -87,4 +71,4 @@ spec:
     - name: pod-dmission
       protocol: TCP
       port: 443
-      targetPort: 443
+      targetPort: 1443

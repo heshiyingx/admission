@@ -77,8 +77,11 @@ EOF
 EOF
   cfssl gencert -initca ca-csr.json | cfssljson -bare ca
   cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json \
-  		-hostname="*" -profile=server server-csr.json | cfssljson -bare server
+  		-hostname="pod-dmission.default.svc" -profile=server server-csr.json | cfssljson -bare server
 }
-gencert
+cd cert
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json \
+  		-hostname="pod-dmission.default.svc" -profile=server server-csr.json | cfssljson -bare server
+#gencert
 
 

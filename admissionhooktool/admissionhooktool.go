@@ -2,7 +2,6 @@ package admissionhooktool
 
 import (
 	"encoding/json"
-	"github.com/go-logr/logr"
 	"gomodules.xyz/jsonpatch/v2"
 	"io"
 	admissionv1 "k8s.io/api/admission/v1"
@@ -10,12 +9,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/klog/v2"
+
 	"net/http"
 )
 
 var (
 	Deserializer = serializer.NewCodecFactory(runtime.NewScheme()).UniversalDeserializer()
-	Log          = logr.Logger{}
+	Log          = klog.NewKlogr()
 )
 
 func PatchResponseFromRaw(request *admissionv1.AdmissionRequest, current []byte) Response {
