@@ -24,6 +24,8 @@ spec:
       # Init containers are exactly like regular containers, except:
       # - Init containers always run to completion.
       # - Each init container must complete successfully before the next one starts.
+      initContainers:
+        - name:
       containers:
         - name:  pod-dmission
           image:  harbor.myshuju.top/public/admissionpod:v0.0.6
