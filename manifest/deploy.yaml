@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name:  pod-dmission
+  name:  image-check
   namespace: default
   labels:
-    app:  pod-dmission
+    app: image-check
 spec:
   selector:
     matchLabels:
-      app: pod-dmission
+      app: image-check
   replicas: 2
   strategy:
     rollingUpdate:
@@ -18,17 +18,17 @@ spec:
   template:
     metadata:
       labels:
-        app:  pod-dmission
+        app: image-check
     spec:
       # initContainers:
       # Init containers are exactly like regular containers, except:
       # - Init containers always run to completion.
       # - Each init container must complete successfully before the next one starts.
-      initContainers:
-        - name:
+#      initContainers:
+#        - name:
       containers:
-        - name:  pod-dmission
-          image:  harbor.myshuju.top/public/admissionpod:v0.0.6
+        - name:  admissionpod
+          image:  harbor.myshuju.top/public/admissionpod:v0.0.11
           resources:
             requests:
               cpu: 100m
@@ -53,24 +53,24 @@ spec:
             path: /usr/share/zoneinfo/Asia/Shanghai
         - name: tls
           secret:
-            secretName: admission-pod-tls
+            secretName: admissionpod-tls
       restartPolicy: Always
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: pod-dmission
+  name: image-check
   namespace: default
 spec:
   selector:
-    app: pod-dmission
+    app: image-check
   type: ClusterIP
   sessionAffinity: None
   sessionAffinityConfig:
     clientIP:
       timeoutSeconds: 10800
   ports:
-    - name: pod-dmission
+    - name: image-check
       protocol: TCP
       port: 443
       targetPort: 1443

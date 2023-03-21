@@ -77,11 +77,14 @@ EOF
 EOF
   cfssl gencert -initca ca-csr.json | cfssljson -bare ca
   cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json \
-  		-hostname="pod-dmission.default.svc" -profile=server server-csr.json | cfssljson -bare server
+  		-hostname="image-check.default.svc" -profile=server server-csr.json | cfssljson -bare server
 }
 cd cert
 cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json \
-  		-hostname="pod-dmission.default.svc" -profile=server server-csr.json | cfssljson -bare server
+  		-hostname="image-check.default.svc" -profile=server server-csr.json | cfssljson -bare server
 #gencert
-
+create_secret(){
+  kubectl create secret tls admissionpod-tls --cert=./cert/server.pem --key=./goCert/server-key.pem
+  cat ./cert/ca.pem | base64
+}
 

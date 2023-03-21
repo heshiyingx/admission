@@ -6,8 +6,10 @@ import (
 	"io"
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -16,9 +18,11 @@ import (
 const MODIFY_IMG_PRE = "MODIFY_IMG_PRE"
 const MODIFY_IMG_DEFAULT = "MODIFY_IMG_DEFAULT"
 
+var log = klog.NewKlogr().WithValues("mutatingAdmissionWebhook", "")
+var reg = regexp.MustCompile(`(.?)@sha256:.*`)
 var (
 	imageModifyList        = make([]string, 0, 6)
-	defaultImageModifyList = []string{"registry.k8s.io", "k8s.gcr.io"}
+	defaultImageModifyList = []string{"registry.k8s.io", "k8s.gcr.io", "gcr.io"}
 )
 
 type mutatingAdmissionWebhook struct {
@@ -42,8 +46,6 @@ func (h *mutatingAdmissionWebhook) ServeHTTP(writer http.ResponseWriter, request
 		admissionhooktool.WriteAdmissionResponse(writer, response, requestReview.Request, gvk)
 		return
 	}
-	admissionhooktool.Log.Info("AdmissionReviewRaw", "raw", string(requestReview.Request.Object.Raw))
-
 	admissionResponse := doHandle(requestReview)
 	admissionhooktool.WriteAdmissionResponse(writer, admissionResponse, requestReview.Request, gvk)
 
@@ -67,15 +69,20 @@ func doHandle(request admissionv1.AdmissionReview) admissionhooktool.Response {
 	}
 
 	for i, container := range pod.Spec.Containers {
+		oldImg := container.Image
 		for _, prefix := range imageModifyList {
+
 			if strings.HasPrefix(container.Image, prefix) {
-				pod.Spec.Containers[i].Image = "harbor.myshuju.top/" + container.Image
+				image := reg.ReplaceAllString(container.Image, `$1`)
+				pod.Spec.Containers[i].Image = "harbor.myshuju.top/" + image
 			}
 		}
+		log.Info("image url", "old url", oldImg, "new url", pod.Spec.Containers[i].Image)
 
 	}
 	nowPodBytes, err := json.Marshal(&pod)
 	if err != nil {
+		log.Error(err, "Marshal pod Err")
 		return admissionhooktool.Errored(http.StatusInternalServerError, err)
 	}
 	return admissionhooktool.PatchResponseFromRaw(request.Request, nowPodBytes)
@@ -92,5 +99,6 @@ func refreshImageModifyList() {
 			imageModifyList = append(imageModifyList, imagePres...)
 		}
 	}
+	log.Info("imageModifyList:", "imageModifyList", strings.Join(imageModifyList, ","))
 
 }
