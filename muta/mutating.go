@@ -68,6 +68,18 @@ func doHandle(request admissionv1.AdmissionReview) admissionhooktool.Response {
 		return admissionhooktool.Errored(http.StatusBadRequest, err)
 	}
 
+	for i, container := range pod.Spec.InitContainers {
+		oldImg := container.Image
+		for _, prefix := range imageModifyList {
+
+			if strings.HasPrefix(container.Image, prefix) {
+				image := reg.ReplaceAllString(container.Image, `$1`)
+				pod.Spec.InitContainers[i].Image = "harbor.myshuju.top/" + image
+			}
+		}
+		log.Info("image url", "old url", oldImg, "new url", pod.Spec.InitContainers[i].Image, "pull", "docker pull "+oldImg, "tag", "docker tag "+oldImg+"  "+pod.Spec.InitContainers[i].Image)
+	}
+
 	for i, container := range pod.Spec.Containers {
 		oldImg := container.Image
 		for _, prefix := range imageModifyList {
@@ -77,7 +89,7 @@ func doHandle(request admissionv1.AdmissionReview) admissionhooktool.Response {
 				pod.Spec.Containers[i].Image = "harbor.myshuju.top/" + image
 			}
 		}
-		log.Info("image url", "old url", oldImg, "new url", pod.Spec.Containers[i].Image)
+		log.Info("image url", "old url", oldImg, "new url", pod.Spec.Containers[i].Image, "pull", "docker pull "+oldImg, "tag", "docker tag "+oldImg+"  "+pod.Spec.Containers[i].Image)
 
 	}
 	nowPodBytes, err := json.Marshal(&pod)
